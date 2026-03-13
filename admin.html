@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Админ - коды доступа</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Arial,sans-serif;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f6f8}
+    .box{width:min(460px,92vw);background:#fff;border-radius:14px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+    h3{margin:0 0 10px}
+    input,button,select{width:100%;box-sizing:border-box;padding:14px 12px;border-radius:12px;border:1px solid #d9dce3;font-size:16px}
+    select{background:#fff}
+    button{border:none;background:#111;color:#fff;font-weight:700;cursor:pointer;margin-top:10px}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .muted{color:#666;font-size:13px;margin-top:10px}
+    .code{font-size:28px;font-weight:800;letter-spacing:4px;text-align:center;margin:12px 0}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#f0f2f6;color:#333;font-size:12px;margin-top:8px}
+    .grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h3>Админ - выдача кода</h3>
+
+    <div id="loginBox">
+      <input id="login" placeholder="Логин" />
+      <input id="pass" type="password" placeholder="Пароль" />
+      <button id="btnLogin">Войти</button>
+      <div id="stLogin" class="muted"></div>
+    </div>
+
+    <div id="panel" style="display:none">
+      <div class="grid">
+        <div class="pill" id="who"></div>
+        <input id="name" placeholder="название аккаунта или номер чека" />
+
+        <select id="ttl">
+          <option value="604800">7 дней</option>
+          <option value="2592000">30 дней</option>
+          <option value="15552000" selected>6 месяцев</option>
+          <option value="31536000">1 год</option>
+          <option value="0">Навсегда</option>
+        </select>
+
+        <button id="btnMake">Создать одноразовый код</button>
+      </div>
+
+      <div id="out" style="display:none">
+        <div class="muted">Код (живёт 5 минут, одноразовый)</div>
+        <div class="code" id="code"></div>
+        <div class="pill" id="ttlInfo"></div>
+        <div class="pill" id="issuedBy"></div>
+        <button id="btnCopy" style="background:#0088cc">Скопировать</button>
+      </div>
+
+      <div id="st" class="muted"></div>
+    </div>
+  </div>
+
+<script>
+  const loginBox = document.getElementById("loginBox");
+  const panel = document.getElementById("panel");
+  const stLogin = document.getElementById("stLogin");
+  const btnLogin = document.getElementById("btnLogin");
+  const loginEl = document.getElementById("login");
+  const passEl = document.getElementById("pass");
+
+  const btnMake = document.getElementById("btnMake");
+  const st = document.getElementById("st");
+  const out = document.getElementById("out");
+  const codeEl = document.getElementById("code");
+  const ttlInfo = document.getElementById("ttlInfo");
+  const issuedBy = document.getElementById("issuedBy");
+  const btnCopy = document.getElementById("btnCopy");
+  const nameEl = document.getElementById("name");
+  const ttlEl = document.getElementById("ttl");
+  const who = document.getElementById("who");
+
+  function ttlLabel(sec){
+    sec = Number(sec);
+    if (sec === 0) return "Срок доступа: Навсегда";
+    const days = Math.round(sec / 86400);
+    if (days === 180) return "Срок доступа: 6 месяцев";
+    if (days === 365) return "Срок доступа: 1 год";
+    return "Срок доступа: " + days + " дней";
+  }
+
+  async function tryMe(){
+    const r = await fetch("/.netlify/functions/me", { credentials: "include" });
+    if(r.ok){
+      const data = await r.json();
+      who.textContent = "Ты вошёл как: " + (data.login || "admin");
+      loginBox.style.display = "none";
+      panel.style.display = "block";
+    }
+  }
+
+  btnLogin.onclick = async () => {
+    stLogin.textContent = "Входим...";
+    btnLogin.disabled = true;
+    try{
+      const r = await fetch("/.netlify/functions/admin-login", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ login: loginEl.value, pass: passEl.value }),
+        credentials: "include"
+      });
+      if(r.ok){
+        stLogin.textContent = "Ок.";
+        await tryMe();
+      } else {
+        const t = await r.text();
+        stLogin.textContent = t === "admin_disabled" ? "Админ отключён." : "Неверный логин или пароль.";
+      }
+    }catch{
+      stLogin.textContent = "Ошибка сети.";
+    }finally{
+      btnLogin.disabled = false;
+    }
+  };
+
+  btnMake.onclick = async () => {
+    st.textContent = "Генерим код...";
+    btnMake.disabled = true;
+    out.style.display = "none";
+    try{
+      const name = (nameEl.value || "").trim() || "User";
+      const ttl = parseInt(ttlEl.value, 10);
+
+      const r = await fetch("/.netlify/functions/invite", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ name, ttl }),
+        credentials: "include"
+      });
+
+      const txt = await r.text();
+      if(!r.ok){
+        st.textContent = "Нет доступа или ошибка: " + txt;
+        return;
+      }
+
+      const data = JSON.parse(txt);
+      codeEl.textContent = data.code;
+      ttlInfo.textContent = ttlLabel(ttl);
+      issuedBy.textContent = "Выдал: " + (data.issuedBy || "admin");
+      out.style.display = "block";
+      st.textContent = "Готово.";
+    }catch(e){
+      st.textContent = "Ошибка: " + (e?.message || "unknown");
+    }finally{
+      btnMake.disabled = false;
+    }
+  };
+
+  btnCopy.onclick = async () => {
+    try{
+      await navigator.clipboard.writeText(codeEl.textContent.trim());
+      st.textContent = "Скопировано.";
+    }catch{
+      st.textContent = "Не смог скопировать - выдели и скопируй вручную.";
+    }
+  };
+
+  tryMe();
+</script>
+</body>
+</html>

@@ -1,0 +1,1561 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Owner Panel</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-body: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-input: #ffffff;
+      --border: #e2e8f0;
+
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+
+      --danger: #e11d48;
+      --danger-bg: #ffe4e6;
+      --danger-text: #be123c;
+
+      --success: #10b981;
+      --success-bg: #d1fae5;
+      --success-text: #047857;
+
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 10px 30px rgba(0,0,0,.08);
+
+      --radius: 12px;
+      --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+      font-size: 14px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+      width: 100%;
+    }
+
+    .hidden { display: none !important; }
+    .mono { font-family: var(--font-mono); font-size: 13px; }
+    .strong { font-weight: 600; }
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .gap-2 { gap: 8px; }
+    .gap-4 { gap: 16px; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .w-full { width: 100%; }
+    .mt-4 { margin-top: 16px; }
+    .mb-2 { margin-bottom: 8px; }
+    .text-right { text-align: right; }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: box-shadow 0.2s;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .card:hover { box-shadow: var(--shadow-md); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 4px;
+      min-height: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .card-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-main);
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+    input:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      white-space: nowrap;
+      user-select: none;
+      min-height: 44px;
+    }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-secondary:hover:not(:disabled) { background: #e2e8f0; }
+
+    .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border: 1px solid transparent;
+    }
+    .btn-danger:hover:not(:disabled) { background: #fecdd3; }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+    .btn-ghost:hover:not(:disabled){ background: #f8fafc; }
+
+    .btn-sm { padding: 6px 12px; font-size: 12px; height: 32px; min-height: 32px; }
+
+    .app-header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 12px 0;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+    }
+
+    .stats-badges { display: flex; gap: 8px; }
+    .stat-badge {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .toolbar { display:flex; gap:8px; align-items:center; }
+
+    .login-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .input-group { position: relative; width: 100%; }
+    .input-group input { padding-right: 84px; }
+    .eye-btn, .copy-btn {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      width: 36px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+    }
+    .eye-btn { right: 4px; }
+    .copy-btn { right: 44px; }
+    .eye-btn:hover, .copy-btn:hover { background: #f1f5f9; color: var(--text-main); }
+
+    .status-msg {
+      margin-top: 10px;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: none;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .status-msg:not(:empty) { display: block; }
+
+    .desktop-table-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+    th {
+      background: #f8fafc;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    .mobile-list { display: flex; flex-direction: column; gap: 10px; }
+    .mobile-item {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .m-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      gap: 10px;
+    }
+    .m-title { font-weight: 600; font-size: 14px; color: var(--text-main); }
+    .m-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .chip {
+      display: inline-flex;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      font-size: 11px;
+      font-weight: 500;
+      color: #475569;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+      background: #f8fafc;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .sg-item { display: flex; flex-direction: column; }
+    .sg-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+    .sg-val { font-size: 13px; font-weight: 700; color: var(--text-main); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-ok { background: var(--success-bg); color: var(--success-text); }
+    .badge-err { background: var(--danger-bg); color: var(--danger-text); }
+
+    .desktop-only { display: block; }
+    .mobile-only { display: none; }
+
+    @media (max-width: 768px) {
+      .desktop-only { display: none; }
+      .mobile-only { display: block; }
+      .grid-2 { grid-template-columns: 1fr !important; }
+
+      .header-content { flex-direction: column; align-items: stretch; }
+      .header-title { text-align: center; margin-bottom: 8px; }
+      .toolbar { justify-content: space-between; width: 100%; display: flex; gap: 8px; }
+      .toolbar button { flex: 1; }
+      .stats-badges { justify-content: center; margin-bottom: 8px; }
+
+      .toast-wrap {
+        max-width: 300px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+      }
+
+      .mobile-list, .desktop-table-wrap {
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .seg {
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .seg button{
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .toast-wrap{
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      display: grid;
+      gap: 8px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .toast{
+      pointer-events: auto;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      background: #0b1220;
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .toast small{ color: rgba(255,255,255,.7); display:block; margin-top:2px; }
+    .toast .tbtn{
+      margin-left:auto;
+      background: rgba(255,255,255,.12);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.18);
+      padding:6px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      pointer-events: auto;
+      cursor:pointer;
+    }
+    .toast.ok{ border-color: rgba(16,185,129,.35); }
+    .toast.err{ border-color: rgba(225,29,72,.45); }
+    .toast.warn{ border-color: rgba(250,204,21,.45); }
+
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .focused {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="login" class="container login-wrapper">
+    <div class="card login-card">
+      <div style="margin-bottom: 20px;">
+        <div style="font-weight: 800; font-size: 24px; color: var(--text-main);">Owner Panel</div>
+        <div style="color: var(--text-muted);">Вход в систему</div>
+      </div>
+
+      <div class="input-group mb-2">
+        <input id="pass" type="password" placeholder="Owner пароль" autocomplete="current-password" />
+        <button class="eye-btn" id="togglePass" type="button" title="Показать/скрыть">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+      </div>
+
+      <button id="btnLogin" class="btn-primary w-full mt-4">Войти</button>
+      <div id="stLogin" class="status-msg"></div>
+    </div>
+  </div>
+
+  <div id="panel" class="hidden">
+
+    <header class="app-header">
+      <div class="container header-content">
+        <div class="header-title">Owner Dashboard</div>
+
+        <div class="stats-badges">
+          <span class="stat-badge" id="sumTag">Всего: ...</span>
+          <span class="stat-badge" id="lastTag">Последнее: ...</span>
+          <span class="stat-badge" id="freshTag">Обновлено: -</span>
+        </div>
+
+        <div id="toolbar" class="toolbar hidden">
+          <button id="btnRefresh" class="btn-primary btn-sm">↻ Обновить</button>
+          <button id="btnReloadAdmins" class="btn-secondary btn-sm" type="button">Админы</button>
+          <button id="btnExportCsv" class="btn-ghost btn-sm" type="button">CSV</button>
+          <button id="btnLogout" class="btn-danger btn-sm" type="button">Выход</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container mt-4">
+      <div class="flex flex-col gap-4">
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Новый администратор</div>
+              <div class="card-subtitle">Логин 3-32 (латиница/цифры/._-), пароль мин. 8</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <input id="newLogin" class="mono" placeholder="login (например: manager1)" />
+              <div class="hint" style="margin-top:6px">Только латиница, цифры, . _ - (без пробелов)</div>
+            </div>
+
+            <div class="input-group">
+              <input id="newPass" type="password" placeholder="Пароль" autocomplete="new-password" />
+              <button class="copy-btn" id="copyNewPass" type="button" title="Скопировать пароль">⧉</button>
+              <button class="eye-btn" id="toggleNewPass" type="button" title="Показать/скрыть">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex gap-2 mt-4" style="flex-wrap:wrap">
+            <button id="btnCreateAdmin" class="btn-primary">Создать аккаунт</button>
+            <button id="btnGenPass" class="btn-secondary" type="button">Сгенерировать пароль</button>
+          </div>
+
+          <div id="stCreate" class="status-msg"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Забрать доступ у аккаунта</div>
+              <div class="card-subtitle">имя или код</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <input id="revokeName" placeholder="Имя/аккаунт (как в выдаче, например: аккаунт1)" />
+              <div class="hint" style="margin-top:6px">Если знаешь точный "Имя/Чек" - хватит его</div>
+            </div>
+            <div class="input-group">
+              <input id="revokeCode" class="mono" placeholder="Код (если удобнее забрать по коду)" />
+              <button class="copy-btn" id="pasteFromClipboard" type="button" title="Вставить из буфера">⇩</button>
+              <button class="eye-btn" id="clearRevoke" type="button" title="Очистить">✕</button>
+            </div>
+          </div>
+
+          <div class="flex gap-2 mt-4" style="flex-wrap:wrap">
+            <button id="btnRevoke" class="btn-danger">Забрать доступ</button>
+            <button id="btnRevokeRefresh" class="btn-secondary" type="button">Обновить логи</button>
+          </div>
+
+          <div id="stRevoke" class="status-msg"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header" style="align-items:flex-end">
+            <div>
+              <div class="card-title">Управление администраторами</div>
+              <div class="card-subtitle">Поиск, фильтр, включить/выключить, удалить</div>
+            </div>
+
+            <div style="min-width:280px; width: 360px; max-width:100%">
+              <input id="adminSearch" placeholder="Поиск по логину..." />
+              <div class="seg" style="margin-top:8px">
+                <button id="fAll" class="btn-ghost btn-sm" type="button">Все</button>
+                <button id="fOn" class="btn-ghost btn-sm" type="button">Активные</button>
+                <button id="fOff" class="btn-ghost btn-sm" type="button">Отключённые</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mobile-only">
+            <div id="adminsCards" class="mobile-list"></div>
+          </div>
+
+          <div class="desktop-only desktop-table-wrap">
+            <table id="adminsTableMain">
+              <thead>
+                <tr>
+                  <th>Логин</th>
+                  <th>Статус</th>
+                  <th class="text-right">Действия</th>
+                </tr>
+              </thead>
+              <tbody id="adminsTbl"></tbody>
+            </table>
+          </div>
+
+          <div id="stAdmins" class="status-msg"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Лог выдач (последние 25)</div>
+              <div class="card-subtitle">Можно быстро скопировать код или забрать доступ прямо отсюда</div>
+            </div>
+          </div>
+
+          <div class="mobile-only">
+            <div id="eventsCards" class="mobile-list"></div>
+          </div>
+
+          <div class="desktop-only desktop-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Время</th>
+                  <th>Админ</th>
+                  <th>Имя / Чек</th>
+                  <th class="text-right">Срок</th>
+                  <th class="mono">Код</th>
+                  <th class="text-right">Действия</th>
+                </tr>
+              </thead>
+              <tbody id="log"></tbody>
+            </table>
+          </div>
+
+          <div id="stLog" class="status-msg"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Статистика по администраторам</div>
+          </div>
+
+          <div class="mobile-only">
+            <div id="statsCards" class="mobile-list"></div>
+          </div>
+
+          <div class="desktop-only desktop-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Админ</th>
+                  <th class="text-right">Всего</th>
+                  <th class="text-right">7д</th>
+                  <th class="text-right">30д</th>
+                  <th class="text-right">6м</th>
+                  <th class="text-right">1г</th>
+                  <th class="text-right">Навсегда</th>
+                  <th>Посл. выдача</th>
+                </tr>
+              </thead>
+              <tbody id="tbl"></tbody>
+            </table>
+          </div>
+
+          <div id="st" class="status-msg"></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const elLogin = document.getElementById("login");
+    const elPanel = document.getElementById("panel");
+    const toolbar = document.getElementById("toolbar");
+
+    const stLogin = document.getElementById("stLogin");
+    const st = document.getElementById("st");
+    const stAdmins = document.getElementById("stAdmins");
+    const stCreate = document.getElementById("stCreate");
+    const stLog = document.getElementById("stLog");
+    const stRevoke = document.getElementById("stRevoke");
+
+    const pass = document.getElementById("pass");
+    const btnLogin = document.getElementById("btnLogin");
+    const btnRefresh = document.getElementById("btnRefresh");
+    const btnReloadAdmins = document.getElementById("btnReloadAdmins");
+    const btnExportCsv = document.getElementById("btnExportCsv");
+    const btnLogout = document.getElementById("btnLogout");
+
+    const sumTag = document.getElementById("sumTag");
+    const lastTag = document.getElementById("lastTag");
+    const freshTag = document.getElementById("freshTag");
+
+    const tbl = document.getElementById("tbl");
+    const log = document.getElementById("log");
+    const adminsTbl = document.getElementById("adminsTbl");
+
+    const adminsCards = document.getElementById("adminsCards");
+    const eventsCards = document.getElementById("eventsCards");
+    const statsCards = document.getElementById("statsCards");
+
+    const newLogin = document.getElementById("newLogin");
+    const newPass = document.getElementById("newPass");
+    const btnCreateAdmin = document.getElementById("btnCreateAdmin");
+    const btnGenPass = document.getElementById("btnGenPass");
+
+    const togglePass = document.getElementById("togglePass");
+    const toggleNewPass = document.getElementById("toggleNewPass");
+    const copyNewPass = document.getElementById("copyNewPass");
+
+    const adminSearch = document.getElementById("adminSearch");
+    const fAll = document.getElementById("fAll");
+    const fOn = document.getElementById("fOn");
+    const fOff = document.getElementById("fOff");
+
+    const revokeName = document.getElementById("revokeName");
+    const revokeCode = document.getElementById("revokeCode");
+    const btnRevoke = document.getElementById("btnRevoke");
+    const btnRevokeRefresh = document.getElementById("btnRevokeRefresh");
+    const pasteFromClipboard = document.getElementById("pasteFromClipboard");
+    const clearRevoke = document.getElementById("clearRevoke");
+
+    const toastWrap = document.getElementById("toastWrap");
+
+    // state
+    let lastAdminsCache = [];
+    let lastEventsCache = [];
+    let adminFilter = "all"; // all | on | off
+    let lastRefreshAt = 0;
+    let cache = new Map();
+
+    // ===== УТИЛИТЫ =====
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    function escText(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#39;");
+    }
+
+    function escAttr(s){
+      return escText(s).replaceAll("\n"," ").replaceAll("\r"," ");
+    }
+
+    function validateLogin(login) {
+      if (!login) return "Логин обязателен";
+      if (login.length < 3 || login.length > 32)
+        return "Логин должен быть от 3 до 32 символов";
+      if (!/^[a-zA-Z0-9._-]+$/.test(login))
+        return "Только латиница, цифры, . _ -";
+      return null;
+    }
+
+    async function handleApiError(response, fallbackMessage = "Ошибка сервера") {
+      try {
+        const text = await response.text();
+        if (text) {
+          try {
+            const json = JSON.parse(text);
+            return json.error || json.message || text;
+          } catch {
+            return text;
+          }
+        }
+        return fallbackMessage;
+      } catch {
+        return fallbackMessage;
+      }
+    }
+
+    async function fetchWithTimeout(url, options = {}, timeout = 10000) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+
+      try {
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal,
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            ...(options.headers || {})
+          }
+        });
+        clearTimeout(id);
+        return response;
+      } catch (error) {
+        clearTimeout(id);
+        throw error;
+      }
+    }
+
+    function fmtTtl(ttl){
+      ttl = Number(ttl);
+      if (ttl === 0) return "∞";
+      const d = Math.round(ttl / 86400);
+      if (d === 7) return "7д";
+      if (d === 30) return "30д";
+      if (d === 180) return "6м";
+      if (d === 365) return "1г";
+      return d + "д";
+    }
+
+    function fmtTime(ms){
+      if (!ms) return "-";
+      const d = new Date(ms);
+      return d.toLocaleString('ru-RU', {
+        month:'2-digit',
+        day:'2-digit',
+        hour:'2-digit',
+        minute:'2-digit'
+      });
+    }
+
+    function genPassword(len=14){
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%_-";
+      let out = "";
+      const arr = new Uint32Array(len);
+      crypto.getRandomValues(arr);
+      for (let i=0;i<len;i++) out += alphabet[arr[i] % alphabet.length];
+      return out;
+    }
+
+    function toggleInputType(input){
+      input.type = (input.type === "password") ? "text" : "password";
+    }
+
+    function setSegActive(){
+      const all = [fAll, fOn, fOff];
+      all.forEach(b => b.style.borderColor = "var(--border)");
+      const active = adminFilter === "all" ? fAll : (adminFilter === "on" ? fOn : fOff);
+      active.style.borderColor = "var(--primary)";
+    }
+
+    function toast(message, type="ok", detail=""){
+      const el = document.createElement("div");
+      el.className = `toast ${type}`;
+
+      const content = document.createElement("div");
+      const messageEl = document.createElement("div");
+      messageEl.style.fontWeight = "700";
+      messageEl.textContent = message;
+      content.appendChild(messageEl);
+
+      if (detail) {
+        const detailEl = document.createElement("small");
+        detailEl.textContent = detail;
+        content.appendChild(detailEl);
+      }
+
+      const btn = document.createElement("button");
+      btn.className = "tbtn";
+      btn.type = "button";
+      btn.textContent = "Ок";
+      btn.onclick = () => el.remove();
+
+      el.appendChild(content);
+      el.appendChild(btn);
+      toastWrap.appendChild(el);
+
+      setTimeout(() => {
+        if (el.isConnected) el.remove();
+      }, 3200);
+    }
+
+    async function copyToClipboard(text, okMsg="Скопировано"){
+      try{
+        await navigator.clipboard.writeText(String(text ?? ""));
+        toast(okMsg, "ok");
+        return true;
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = String(text ?? "");
+        ta.style.position="fixed";
+        ta.style.left="-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try{
+          document.execCommand("copy");
+          toast(okMsg, "ok");
+          return true;
+        } catch {
+          toast("Не смог скопировать", "err");
+          return false;
+        } finally {
+          ta.remove();
+        }
+      }
+    }
+
+    function downloadCsv(filename, rows){
+      const csv = rows.map(r =>
+        r.map(x => {
+          const s = String(x ?? "");
+          return `"${s.replaceAll('"','""')}"`
+        }).join(",")
+      ).join("\n");
+
+      const blob = new Blob(["\uFEFF" + csv], {type:"text/csv;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ===== ШАБЛОНЫ =====
+    function adminCardHtml(login, enabled){
+      return `
+        <div class="mobile-item">
+          <div class="m-header">
+            <div>
+              <div class="m-title mono">${escText(login)}</div>
+              <div class="m-sub">${enabled ? '<span class="badge badge-ok">Активен</span>' : '<span class="badge badge-err">Отключен</span>'}</div>
+            </div>
+
+            <div class="flex gap-2" style="flex-wrap:wrap; justify-content:flex-end">
+              <button class="btn-sm ${enabled ? "btn-danger" : "btn-primary"}"
+                data-action="toggle-admin" data-login="${escAttr(login)}" data-enabled="${enabled ? "0" : "1"}">
+                ${enabled ? "Выключить" : "Включить"}
+              </button>
+
+              <button class="btn-sm btn-danger"
+                data-action="delete-admin" data-login="${escAttr(login)}">
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function statCardHtml(a){
+      const by = a.byTtl || {};
+      return `
+        <div class="mobile-item">
+          <div class="m-header">
+            <div>
+              <div class="m-title mono">${escText(a.admin||"unknown")}</div>
+              <div class="m-sub">Последняя: ${a.lastAt ? escText(fmtTime(a.lastAt)) : "-"}</div>
+            </div>
+            <div class="chip" style="background:var(--primary); color:#fff;">Всего: ${a.total||0}</div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="sg-item"><div class="sg-label">7 дней</div><div class="sg-val">${by["604800"]||0}</div></div>
+            <div class="sg-item"><div class="sg-label">30 дней</div><div class="sg-val">${by["2592000"]||0}</div></div>
+            <div class="sg-item"><div class="sg-label">6 мес</div><div class="sg-val">${by["15552000"]||0}</div></div>
+            <div class="sg-item"><div class="sg-label">1 год</div><div class="sg-val">${by["31536000"]||0}</div></div>
+            <div class="sg-item" style="grid-column: 1 / -1; border-top:1px solid var(--border); padding-top:6px;">
+              <div class="sg-label">Навсегда</div><div class="sg-val">${by["0"]||0}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function eventCardHtml(ev){
+      const name = ev.name || "Без имени";
+      const code = ev.code || "-";
+      return `
+        <div class="mobile-item">
+          <div class="m-header">
+            <div>
+              <div class="m-title">${escText(name)}</div>
+              <div class="m-sub">${escText(fmtTime(ev.at))}</div>
+            </div>
+            <div class="chip mono" style="font-weight:700">${escText(fmtTtl(ev.sessTtl))}</div>
+          </div>
+
+          <div class="chip-group">
+            <span class="chip">Админ: <b class="mono">${escText(ev.admin||"unknown")}</b></span>
+            <span class="chip mono">${escText(code)}</span>
+            <button class="btn-sm btn-ghost" data-action="copy-code" data-code="${escAttr(code)}">Копировать</button>
+            <button class="btn-sm btn-danger" data-action="revoke" data-name="${escAttr(name)}" data-code="${escAttr(code)}">Забрать</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ===== РЕНДЕРИНГ АДМИНОВ =====
+    function renderAdmins(admins){
+      lastAdminsCache = admins.slice();
+
+      const q = (adminSearch.value || "").trim().toLowerCase();
+      let list = admins.map(a => {
+        const login = a.login || a.admin || "unknown";
+        const enabled = !!a.enabled;
+        return { login, enabled };
+      });
+
+      if (adminFilter === "on") list = list.filter(x => x.enabled);
+      if (adminFilter === "off") list = list.filter(x => !x.enabled);
+      if (q) list = list.filter(x => x.login.toLowerCase().includes(q));
+
+      adminsTbl.innerHTML = list.map(x => `
+        <tr>
+          <td class="mono strong">${escText(x.login)}</td>
+          <td>${x.enabled ? `<span class="badge badge-ok">Активен</span>` : `<span class="badge badge-err">Отключен</span>`}</td>
+          <td class="text-right">
+            <div class="flex gap-2" style="justify-content:flex-end; flex-wrap:wrap">
+              <button class="btn-sm ${x.enabled ? "btn-danger" : "btn-primary"}"
+                data-action="toggle-admin" data-login="${escAttr(x.login)}" data-enabled="${x.enabled ? "0" : "1"}">
+                ${x.enabled ? "Выключить" : "Включить"}
+              </button>
+              <button class="btn-sm btn-danger"
+                data-action="delete-admin" data-login="${escAttr(x.login)}">
+                Удалить
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+
+      adminsCards.innerHTML = list.map(x => adminCardHtml(x.login, x.enabled)).join("");
+
+      if (!list.length) {
+        const empty = `<div class="hint">Ничего не найдено</div>`;
+        adminsCards.innerHTML = adminsCards.innerHTML || empty;
+      }
+    }
+
+    // ===== API =====
+    async function tryMe(){
+      try {
+        const r = await fetchWithTimeout("/.netlify/functions/owner-me", {
+          credentials: "include"
+        });
+
+        if (r.ok) {
+          elLogin.classList.add('hidden');
+          elPanel.classList.remove('hidden');
+          toolbar.classList.remove('hidden');
+          toolbar.style.display = "flex";
+          await Promise.all([refresh(), loadAdmins()]);
+        } else if (r.status === 401 || r.status === 403) {
+          toast("Сессия истекла", "err", "Пожалуйста, войдите снова");
+        }
+      } catch(e) {
+        if (e.name === 'AbortError') toast("Таймаут запроса", "err", "Проверьте подключение");
+      }
+    }
+
+    async function refresh(){
+      st.textContent = "Загрузка статистики...";
+      stLog.textContent = "Загрузка логов...";
+      btnRefresh.disabled = true;
+
+      try{
+        const r = await fetchWithTimeout("/.netlify/functions/owner-stats", {
+          credentials: "include"
+        });
+
+        if (r.status === 401 || r.status === 403) {
+          st.textContent = "Сессия истекла.";
+          stLog.textContent = "";
+          toast("Сессия истекла", "err", "Пожалуйста, войдите снова");
+          elLogin.classList.remove('hidden');
+          elPanel.classList.add('hidden');
+          return;
+        }
+
+        if (!r.ok) {
+          const errorMsg = await handleApiError(r, "Ошибка загрузки данных");
+          throw new Error(errorMsg);
+        }
+
+        const data = await r.json();
+
+        sumTag.textContent = "Всего: " + (data.totalIssued || 0);
+        lastTag.textContent = "Последнее: " + (data.lastEventAt ? fmtTime(data.lastEventAt) : "-");
+
+        const rows = (data.admins || []).sort((a,b)=> (b.total||0)-(a.total||0));
+
+        tbl.innerHTML = rows.map(a => {
+          const by = a.byTtl || {};
+          return `
+            <tr>
+              <td class="mono strong">${escText(a.admin||"unknown")}</td>
+              <td class="text-right strong">${a.total||0}</td>
+              <td class="text-right">${by["604800"]||0}</td>
+              <td class="text-right">${by["2592000"]||0}</td>
+              <td class="text-right">${by["15552000"]||0}</td>
+              <td class="text-right">${by["31536000"]||0}</td>
+              <td class="text-right">${by["0"]||0}</td>
+              <td>${a.lastAt ? fmtTime(a.lastAt) : "-"}</td>
+            </tr>
+          `;
+        }).join("");
+
+        statsCards.innerHTML = rows.map(statCardHtml).join("");
+
+        const events = (data.events || []).slice(0,25);
+        lastEventsCache = events.slice();
+
+        log.innerHTML = events.map(ev => {
+          const name = ev.name || "";
+          const code = ev.code || "-";
+          return `
+            <tr>
+              <td style="white-space:nowrap; color:var(--text-muted)">${fmtTime(ev.at)}</td>
+              <td class="mono">${escText(ev.admin||"unknown")}</td>
+              <td>${escText(name)}</td>
+              <td class="text-right"><span class="badge" style="background:#f1f5f9">${fmtTtl(ev.sessTtl)}</span></td>
+              <td class="mono" style="font-size:12px">${escText(code)}</td>
+              <td class="text-right">
+                <div class="flex gap-2" style="justify-content:flex-end; flex-wrap:wrap">
+                  <button class="btn-sm btn-ghost" data-action="copy-code" data-code="${escAttr(code)}">Copy</button>
+                  <button class="btn-sm btn-danger" data-action="revoke" data-name="${escAttr(name)}" data-code="${escAttr(code)}">Забрать</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+
+        eventsCards.innerHTML = events.map(eventCardHtml).join("");
+
+        st.textContent = "";
+        stLog.textContent = "";
+
+        lastRefreshAt = Date.now();
+        freshTag.textContent = "Обновлено: " + fmtTime(lastRefreshAt);
+      } catch(e){
+        const errorMsg = e.name === 'AbortError' ? 'Таймаут запроса' : e.message;
+        st.textContent = "Ошибка: " + errorMsg;
+        toast("Ошибка загрузки", "err", errorMsg);
+      } finally {
+        btnRefresh.disabled = false;
+      }
+    }
+
+    async function loadAdmins(){
+      stAdmins.textContent = "Обновление списка...";
+      btnReloadAdmins.disabled = true;
+
+      try{
+        const r = await fetchWithTimeout("/.netlify/functions/owner-list-admins", {
+          credentials: "include"
+        });
+
+        if (r.status === 401 || r.status === 403) {
+          stAdmins.textContent = "Сессия истекла.";
+          toast("Сессия истекла", "err");
+          return;
+        }
+
+        if (!r.ok) {
+          const errorMsg = await handleApiError(r, "Ошибка загрузки списка админов");
+          throw new Error(errorMsg);
+        }
+
+        const data = await r.json();
+        const admins = Array.isArray(data.admins) ? data.admins : [];
+
+        renderAdmins(admins);
+        stAdmins.textContent = "";
+        toast("Админы обновлены", "ok");
+      } catch(e){
+        const errorMsg = e.name === 'AbortError' ? 'Таймаут запроса' : e.message;
+        stAdmins.textContent = "Ошибка: " + errorMsg;
+        toast("Ошибка админов", "err", errorMsg);
+      } finally {
+        btnReloadAdmins.disabled = false;
+      }
+    }
+
+    // ===== ДЕЙСТВИЯ =====
+    async function setAdminEnabled(login, enabled){
+      if (!enabled) {
+        const ok = confirm(`Точно выключить админа: ${login}?`);
+        if (!ok) return;
+      }
+
+      stAdmins.textContent = "Обновляю статус...";
+      try{
+        const rr = await fetchWithTimeout("/.netlify/functions/owner-set-admin-enabled", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ login, enabled }),
+          credentials: "include"
+        });
+
+        if (rr.status === 401 || rr.status === 403) {
+          toast("Сессия истекла", "err", "Пожалуйста, войдите снова");
+          elLogin.classList.remove('hidden');
+          elPanel.classList.add('hidden');
+          return;
+        }
+
+        const txt = await rr.text();
+        if (!rr.ok) {
+          const errorMsg = await handleApiError(rr, txt);
+          stAdmins.textContent = "Ошибка: " + errorMsg;
+          toast("Не получилось", "err", errorMsg);
+        } else {
+          stAdmins.textContent = "";
+          toast("Статус обновлён", "ok");
+          await loadAdmins();
+        }
+      } catch(e){
+        const errorMsg = e.name === 'AbortError' ? 'Таймаут запроса' : 'Ошибка сети';
+        stAdmins.textContent = errorMsg;
+        toast(errorMsg, "err");
+      }
+    }
+
+    async function deleteAdmin(login){
+      const ok = confirm(`Удалить админа полностью: ${login}?\n\nЭто необратимо.`);
+      if (!ok) return;
+
+      stAdmins.textContent = "Удаляю админа...";
+      try{
+        const rr = await fetchWithTimeout("/.netlify/functions/owner-delete-admin", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ login }),
+          credentials: "include"
+        });
+
+        if (rr.status === 401 || rr.status === 403) {
+          toast("Сессия истекла", "err", "Пожалуйста, войдите снова");
+          elLogin.classList.remove('hidden');
+          elPanel.classList.add('hidden');
+          return;
+        }
+
+        const txt = await rr.text();
+        if (!rr.ok) {
+          const errorMsg = await handleApiError(rr, txt);
+          stAdmins.textContent = "Ошибка: " + errorMsg;
+          toast("Не удалилось", "err", errorMsg);
+        } else {
+          stAdmins.textContent = "";
+          toast("Админ удалён", "ok", login);
+          await loadAdmins();
+        }
+      } catch(e){
+        const errorMsg = e.name === 'AbortError' ? 'Таймаут запроса' : 'Ошибка сети';
+        stAdmins.textContent = errorMsg;
+        toast(errorMsg, "err");
+      }
+    }
+
+    async function revokeAccess(payload){
+      const name = (payload?.name || "").trim();
+      const code = (payload?.code || "").trim();
+
+      if (!name && !code) {
+        toast("Нужно имя или код", "warn");
+        return;
+      }
+
+      const ok = confirm(`Забрать доступ?\n${name ? "Имя: " + name : ""}${code ? "\nКод: " + code : ""}`);
+      if (!ok) return;
+
+      stRevoke.textContent = "Забираю доступ...";
+      btnRevoke.disabled = true;
+
+      try{
+        const rr = await fetchWithTimeout("/.netlify/functions/owner-revoke-access", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ name: name || null, code: code || null }),
+          credentials: "include"
+        });
+
+        if (rr.status === 401 || rr.status === 403) {
+          toast("Сессия истекла", "err", "Пожалуйста, войдите снова");
+          elLogin.classList.remove('hidden');
+          elPanel.classList.add('hidden');
+          return;
+        }
+
+        const txt = await rr.text();
+        if (!rr.ok) {
+          const errorMsg = await handleApiError(rr, txt);
+          stRevoke.textContent = "Ошибка: " + errorMsg;
+          toast("Не получилось", "err", errorMsg);
+        } else {
+          stRevoke.textContent = "";
+          toast("Доступ забран", "ok");
+          await refresh();
+        }
+      } catch(e){
+        const errorMsg = e.name === 'AbortError' ? 'Таймаут запроса' : 'Ошибка сети';
+        stRevoke.textContent = errorMsg;
+        toast(errorMsg, "err");
+      } finally {
+        btnRevoke.disabled = false;
+      }
+    }
+
+    function handleActionClick(e){
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+
+      const action = btn.getAttribute("data-action");
+
+      if (action === "toggle-admin") {
+        const login = btn.getAttribute("data-login") || "";
+        const enabled = btn.getAttribute("data-enabled") === "1";
+        btn.disabled = true;
+        setAdminEnabled(login, enabled).finally(() => btn.disabled = false);
+        return;
+      }
+
+      if (action === "delete-admin") {
+        const login = btn.getAttribute("data-login") || "";
+        btn.disabled = true;
+        deleteAdmin(login).finally(() => btn.disabled = false);
+        return;
+      }
+
+      if (action === "copy-code") {
+        const code = btn.getAttribute("data-code") || "";
+        copyToClipboard(code, "Код скопирован");
+        return;
+      }
+
+      if (action === "revoke") {
+        const name = btn.getAttribute("data-name") || "";
+        const code = btn.getAttribute("data-code") || "";
+        revokeName.value = name;
+        revokeCode.value = code;
+        revokeAccess({ name, code });
+        return;
+      }
+    }
+
+    adminsTbl.addEventListener("click", handleActionClick);
+    adminsCards.addEventListener("click", handleActionClick);
+    log.addEventListener("click", handleActionClick);
+    eventsCards.addEventListener("click", handleActionClick);
+
+    // UI
+    togglePass.onclick = () => toggleInputType(pass);
+    toggleNewPass.onclick = () => toggleInputType(newPass);
+
+    pass.addEventListener("keydown", (e)=>{
+      if (e.key === "Enter") btnLogin.click();
+    });
+
+    copyNewPass.onclick = () => {
+      if (!newPass.value) {
+        toast("Пароль пустой", "warn");
+        return;
+      }
+      copyToClipboard(newPass.value, "Пароль скопирован");
+    };
+
+    btnLogin.onclick = debounce(async () => {
+      stLogin.textContent = "Проверка...";
+      btnLogin.disabled = true;
+
+      try{
+        const r = await fetchWithTimeout("/.netlify/functions/owner-login", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ pass: pass.value }),
+          credentials: "include"
+        });
+
+        if (!r.ok) {
+          const errorMsg = await handleApiError(r, "Неверный пароль");
+          stLogin.textContent = errorMsg;
+          toast("Ошибка входа", "err", errorMsg);
+        } else {
+          stLogin.textContent = "";
+          toast("Вход выполнен", "ok");
+          await tryMe();
+        }
+      } catch(e){
+        const errorMsg = e.name === 'AbortError' ? 'Таймаут запроса' : 'Ошибка сети';
+        stLogin.textContent = errorMsg;
+        toast(errorMsg, "err");
+      } finally {
+        btnLogin.disabled = false;
+      }
+    }, 300);
+
+    // ВАЖНО: теперь "↻ Обновить" обновляет ВСЁ сразу (статы+логи+админы)
+    btnRefresh.onclick = debounce(async () => {
+      await refresh();
+      await loadAdmins();
+    }, 300);
+
+    btnReloadAdmins.onclick = debounce(loadAdmins, 300);
+
+    btnGenPass.onclick = () => {
+      newPass.value = genPassword(14);
+      stCreate.textContent = "";
+      toast("Пароль сгенерирован", "ok");
+    };
+
+    btnCreateAdmin.onclick = debounce(async () => {
+      stCreate.textContent = "Создание...";
+      btnCreateAdmin.disabled = true;
+
+      try{
+        const login = (newLogin.value || "").trim();
+        const password = (newPass.value || "").trim();
+
+        const loginError = validateLogin(login);
+        if (loginError) {
+          stCreate.textContent = loginError;
+          newLogin.focus();
+          toast("Ошибка валидации", "warn", loginError);
+          return;
+        }
+
+        if (password.length < 8) {
+          stCreate.textContent = "Пароль минимум 8 символов";
+          newPass.focus();
+          toast("Пароль слишком короткий", "warn");
+          return;
+        }
+
+        const r = await fetchWithTimeout("/.netlify/functions/owner-create-admin", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ login, password }),
+          credentials: "include"
+        });
+
+        if (r.status === 401 || r.status === 403) {
+          toast("Сессия истекла", "err", "Пожалуйста, войдите снова");
+          elLogin.classList.remove('hidden');
+          elPanel.classList.add('hidden');
+          return;
+        }
+
+        if (!r.ok) {
+          const errorMsg = await handleApiError(r, "Ошибка создания");
+          stCreate.textContent = "Ошибка: " + errorMsg;
+          toast("Ошибка создания", "err", errorMsg);
+          return;
+        }
+
+        stCreate.textContent = "";
+        toast("Админ создан", "ok", login);
+        copyToClipboard(password, "Пароль скопирован");
+        newLogin.value = "";
+        newPass.value = "";
+
+        await loadAdmins();
+      } catch(e){
+        const errorMsg = e.name === 'AbortError' ? 'Таймаут запроса' : e.message;
+        stCreate.textContent = "Ошибка: " + errorMsg;
+        toast("Ошибка", "err", errorMsg);
+      } finally {
+        btnCreateAdmin.disabled = false;
+      }
+    }, 300);
+
+    adminSearch.addEventListener("input", debounce(() =>
+      renderAdmins(lastAdminsCache), 300
+    ));
+
+    fAll.onclick = () => {
+      adminFilter = "all";
+      setSegActive();
+      renderAdmins(lastAdminsCache);
+    };
+    fOn.onclick  = () => {
+      adminFilter = "on";
+      setSegActive();
+      renderAdmins(lastAdminsCache);
+    };
+    fOff.onclick = () => {
+      adminFilter = "off";
+      setSegActive();
+      renderAdmins(lastAdminsCache);
+    };
+    setSegActive();
+
+    btnRevoke.onclick = debounce(() =>
+      revokeAccess({ name: revokeName.value, code: revokeCode.value }), 300
+    );
+
+    btnRevokeRefresh.onclick = debounce(refresh, 300);
+
+    pasteFromClipboard.onclick = async () => {
+      try{
+        const t = await navigator.clipboard.readText();
+        if (t) {
+          revokeCode.value = t.trim();
+          toast("Вставлено из буфера", "ok");
+        } else {
+          toast("Буфер пустой", "warn");
+        }
+      } catch {
+        toast("Не могу прочитать буфер", "err");
+      }
+    };
+
+    clearRevoke.onclick = () => {
+      revokeName.value = "";
+      revokeCode.value = "";
+      stRevoke.textContent = "";
+    };
+
+    btnExportCsv.onclick = () => {
+      if (!lastEventsCache.length) {
+        toast("Нет данных для экспорта", "warn");
+        return;
+      }
+
+      const rows = [];
+      rows.push(["Время", "Админ", "Имя", "Срок", "Код"]);
+      for (const ev of lastEventsCache) {
+        rows.push([
+          fmtTime(ev.at),
+          ev.admin || "",
+          ev.name || "",
+          fmtTtl(ev.sessTtl),
+          ev.code || ""
+        ]);
+      }
+      downloadCsv(`events_${new Date().toISOString().split('T')[0]}.csv`, rows);
+      toast("CSV скачан", "ok");
+    };
+
+    btnLogout.onclick = async () => {
+      if (confirm("Выйти из панели управления?")) {
+        try {
+          await fetchWithTimeout("/.netlify/functions/owner-logout", {
+            method: "POST",
+            credentials: "include"
+          });
+          location.reload();
+        } catch {
+          location.reload();
+        }
+      }
+    };
+
+    // Горячие клавиши оставил, но без автообновлений
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+        e.preventDefault();
+        btnRefresh.click();
+      }
+      if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        adminSearch.focus();
+      }
+      if (e.key === 'Escape' && document.activeElement === adminSearch) {
+        adminSearch.value = '';
+        renderAdmins(lastAdminsCache);
+      }
+      if (e.ctrlKey && e.key === 'l') {
+        e.preventDefault();
+        btnLogout.click();
+      }
+    });
+
+    tryMe();
+  </script>
+</body>
+</html>

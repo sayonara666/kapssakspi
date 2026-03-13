@@ -1,0 +1,8 @@
+[build]
+  functions = "netlify/functions"
+  edge_functions = "netlify/edge-functions"
+
+# Подключаем middleware (edge function) ко ВСЕМ путям
+[[edge_functions]]
+  function = "auth"
+  path = "/*"
